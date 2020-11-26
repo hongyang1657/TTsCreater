@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <RelativeLayout
+        android:id="@+id/rl_title"
+        android:paddingTop="40dp"
+        android:paddingBottom="10dp"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal"
+        android:background="@color/alipayBlue"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:text="语音生成器"
+            android:textSize="18sp"
+            android:textColor="@color/colorWhite"
+            android:gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/tv_path"
+            android:text="路径"
+            android:clickable="true"
+            android:onClick="click"
+            android:gravity="center"
+            android:textSize="14sp"
+            android:textColor="@color/colorWhite"
+            android:layout_alignTop="@id/tv_title"
+            android:layout_alignBottom="@id/tv_title"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </RelativeLayout>
+
+    <ScrollView
+        android:id="@+id/sc"
+        android:layout_below="@id/rl_title"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <EditText
+                android:id="@+id/et_input"
+                android:layout_above="@id/bt_start"
+                android:hint="输入想生成的语句"
+                android:text=""
+                android:lines="15"
+                android:gravity="start"
+                android:maxLength="120"
+                android:textSize="15sp"
+                android:layout_weight="1"
+                android:textColor="@color/colorBlack"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:textColorHint="@color/colorRbNotSelected"
+                android:padding="20dp"
+                android:layout_margin="20dp"
+                android:background="@drawable/edittext_back_shape"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
+
+            <com.qmuiteam.qmui.layout.QMUIButton
+                android:id="@+id/bt_start"
+                android:background="@color/colorRbSelected"
+                android:gravity="center"
+                android:layout_gravity="center"
+                android:text="生成音频"
+                android:layout_centerHorizontal="true"
+                android:focusable="true"
+                android:clickable="true"
+                android:onClick="click"
+                android:textColor="@color/colorWhite"
+                android:layout_marginBottom="30dp"
+                android:layout_width="150dp"
+                android:layout_height="40dp"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <com.qmuiteam.qmui.widget.QMUILoadingView
+        android:id="@+id/loading"
+        android:layout_below="@id/rl_title"
+        android:layout_marginTop="180dp"
+        android:layout_centerHorizontal="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+</RelativeLayout>

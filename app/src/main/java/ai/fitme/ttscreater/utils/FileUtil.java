@@ -26,7 +26,7 @@ public class FileUtil {
 
     public static void makeDir(){
         String video_savePath = Environment.getExternalStorageDirectory()
-                .toString() + "/tts/tts";
+                .toString() + Constants.TTS_PATH;
         File file = new File(video_savePath);
         // video文件夹不存在
         if (!file.exists()) {

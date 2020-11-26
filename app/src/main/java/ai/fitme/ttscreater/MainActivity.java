@@ -21,7 +21,10 @@ import android.widget.Toast;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUILoadingView;
 import java.io.File;
+import java.util.Arrays;
+
 import ai.fitme.ttscreater.model.GenerateTTsOnlineModel;
+import ai.fitme.ttscreater.utils.Constants;
 import ai.fitme.ttscreater.utils.FileUtil;
 import ai.fitme.ttscreater.utils.L;
 import ai.fitme.ttscreater.utils.PermissionsUtils;
@@ -47,6 +50,7 @@ public class MainActivity extends Activity {
             super.handleMessage(msg);
             switch (msg.what){
                 case MULTI_SENTENCES_PROCESS:
+                    L.i("index:"+index);
                     index++;
                     if (index==sentences.length){
                         qmuiLoadingView.stop();
@@ -58,7 +62,6 @@ public class MainActivity extends Activity {
                     }else {
                         Toast.makeText(getApplicationContext(), sentences[index-1]+".wav生成成功", Toast.LENGTH_SHORT).show();
                         generateTTS(sentences[index]);
-                        handler.obtainMessage(MULTI_SENTENCES_PROCESS);
                     }
                     break;
                 case GENERATE_FAILED:
@@ -121,6 +124,7 @@ public class MainActivity extends Activity {
     private int index = 0;
     String[] sentences;
     private void getTTsData(){
+        index = 0;
         //判断是多行输入还是单行输入
         String input = etInput.getText().toString();
         if (input.trim().length()==0){
@@ -134,6 +138,7 @@ public class MainActivity extends Activity {
             //单语句输入
             sentences = new String[]{input};
         }
+        L.i("sentence:"+ Arrays.toString(sentences));
         qmuiLoadingView.start();
         qmuiLoadingView.setVisibility(View.VISIBLE);
         btStart.setBackgroundColor(getResources().getColor(R.color.colorRbNotSelected));
@@ -145,6 +150,7 @@ public class MainActivity extends Activity {
 
     //在线生成自定义的tts
     private void generateTTS(final String content){
+        L.i("generateTTS:"+index);
         if (generateTTsOnlineModel==null){
             generateTTsOnlineModel = new GenerateTTsOnlineModel(this);
         }
@@ -152,20 +158,20 @@ public class MainActivity extends Activity {
             @Override
             public void onError() {
                 L.i("生成失败");
-                handler.obtainMessage(GENERATE_FAILED);
+                handler.sendEmptyMessage(GENERATE_FAILED);
             }
 
             @Override
             public void onSuccess(byte[] audioData) {
                 //音频文件存在本地
                 if (content.length()<10){
-                    ttsFileName = "tts/tts/"+content+".wav";
+                    ttsFileName = Constants.TTS_PATH + content+".wav";
                 }else {
-                    ttsFileName = "tts/tts/"+content.substring(0,10)+".wav";
+                    ttsFileName = Constants.TTS_PATH + content.substring(0,10)+".wav";
                 }
                 boolean isSuccess = FileUtil.setFileAtRoot(ttsFileName,audioData);
                 L.i("生成音频文件名："+ttsFileName+" 是否成功："+isSuccess);
-                handler.obtainMessage(MULTI_SENTENCES_PROCESS);
+                handler.sendEmptyMessage(MULTI_SENTENCES_PROCESS);
             }
         });
     }
@@ -186,7 +192,7 @@ public class MainActivity extends Activity {
         if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             return;
         }
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + "/tts";
+        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + Constants.TTS_PATH;
         File dir = new File(path);
         if (!dir.exists()) {
             dir.mkdirs();

@@ -26,6 +26,7 @@ public class Constants {
     public static final int MODE_MAIN = 2001;
     public static final int MODE_ADVERTISING = 2002;
 
+    public static final String TTS_PATH = "/tts/";
     //登记楼层应答
     public static final String[] REGISTER_ANSWER_LIST = {"","intent/已登记.wav","<登记楼层>"};
 

@@ -41,9 +41,35 @@
             android:layout_height="wrap_content"/>
     </RelativeLayout>
 
+    <RadioGroup
+        android:id="@+id/radio_g"
+        android:orientation="horizontal"
+        android:layout_below="@id/rl_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RadioButton
+            android:id="@+id/rb_chinese"
+            android:text="中文"
+            android:checked="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="20dp"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <RadioButton
+            android:id="@+id/rb_english"
+            android:text="英文"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="30dp"
+            android:gravity="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </RadioGroup>
+
     <ScrollView
         android:id="@+id/sc"
-        android:layout_below="@id/rl_title"
+        android:layout_below="@id/radio_g"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <LinearLayout
@@ -59,7 +85,7 @@
                 android:lines="15"
                 android:maxLines="30"
                 android:gravity="start"
-                android:maxLength="300"
+                android:maxLength="3000"
                 android:textSize="15sp"
                 android:layout_weight="1"
                 android:textColor="@color/colorBlack"

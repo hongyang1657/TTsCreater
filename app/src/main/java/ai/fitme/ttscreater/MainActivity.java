@@ -1,34 +1,27 @@
 package ai.fitme.ttscreater;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.FileProvider;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 import com.qmuiteam.qmui.layout.QMUIButton;
 import com.qmuiteam.qmui.widget.QMUILoadingView;
-import java.io.File;
 import java.util.Arrays;
-
 import ai.fitme.ttscreater.model.GenerateTTsOnlineModel;
 import ai.fitme.ttscreater.utils.Constants;
 import ai.fitme.ttscreater.utils.FileUtil;
 import ai.fitme.ttscreater.utils.L;
 import ai.fitme.ttscreater.utils.PermissionsUtils;
 import ai.fitme.ttscreater.utils.StatusBarUtil;
+import ai.fitme.ttscreater.utils.ToastUtil;
 
 public class MainActivity extends Activity {
     //权限
@@ -36,12 +29,13 @@ public class MainActivity extends Activity {
 
     private EditText etInput;
     private QMUIButton btStart;
-    private TextView tvPath;
+    private RadioGroup radioGroup;
     private QMUILoadingView qmuiLoadingView;
     private GenerateTTsOnlineModel generateTTsOnlineModel = null;
 
     private static final int MULTI_SENTENCES_PROCESS = 1;
     private static final int GENERATE_FAILED = 2;
+    private static String speaker = GenerateTTsOnlineModel.CHINESE_GIRL;
 
     @SuppressLint("HandlerLeak")
     private Handler handler = new Handler(){
@@ -111,15 +105,27 @@ public class MainActivity extends Activity {
     private void initView(){
         etInput = findViewById(R.id.et_input);
         btStart = findViewById(R.id.bt_start);
-        tvPath = findViewById(R.id.tv_path);
+        radioGroup = findViewById(R.id.radio_g);
         qmuiLoadingView = findViewById(R.id.loading);
         qmuiLoadingView.setVisibility(View.GONE);
         btStart.setRadius(20);
         btStart.setChangeAlphaWhenPress(true);
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId){
+                    case R.id.rb_chinese:
+                        speaker = GenerateTTsOnlineModel.CHINESE_GIRL;
+                        break;
+                    case R.id.rb_english:
+                        speaker = GenerateTTsOnlineModel.ENGLISH;
+                        break;
+                }
+            }
+        });
         FileUtil.makeDir();
     }
 
-    //private String content;
     private String ttsFileName;
     private int index = 0;
     String[] sentences;
@@ -154,7 +160,7 @@ public class MainActivity extends Activity {
         if (generateTTsOnlineModel==null){
             generateTTsOnlineModel = new GenerateTTsOnlineModel(this);
         }
-        generateTTsOnlineModel.generateTTs(content, new GenerateTTsOnlineModel.OnTTsGenerateListener() {
+        generateTTsOnlineModel.generateTTs(content,speaker, new GenerateTTsOnlineModel.OnTTsGenerateListener() {
             @Override
             public void onError() {
                 L.i("生成失败");
@@ -163,12 +169,14 @@ public class MainActivity extends Activity {
 
             @Override
             public void onSuccess(byte[] audioData) {
+                String timestamp = String.valueOf(System.currentTimeMillis());
                 //音频文件存在本地
-                if (content.length()<10){
-                    ttsFileName = Constants.TTS_PATH + content+".wav";
-                }else {
-                    ttsFileName = Constants.TTS_PATH + content.substring(0,10)+".wav";
-                }
+//                if (content.length()<10){
+//                    ttsFileName = Constants.TTS_PATH + content + timestamp + ".wav";
+//                }else {
+//                    ttsFileName = Constants.TTS_PATH + content.substring(0,10)+ timestamp +".wav";
+//                }
+                ttsFileName = Constants.TTS_PATH + content + ".wav";
                 boolean isSuccess = FileUtil.setFileAtRoot(ttsFileName,audioData);
                 L.i("生成音频文件名："+ttsFileName+" 是否成功："+isSuccess);
                 handler.sendEmptyMessage(MULTI_SENTENCES_PROCESS);
@@ -182,41 +190,10 @@ public class MainActivity extends Activity {
                 getTTsData();
                 break;
             case R.id.tv_path:
-                //跳转文件夹
-                openAssignFolder();
+                //提示存放的路径
+                ToastUtil.showToast(this,"音频文件存储地址:"+FileUtil.getSDCardPath()+Constants.TTS_PATH);
                 break;
         }
-    }
-
-    private void openAssignFolder(){
-        if (!Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            return;
-        }
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath() + Constants.TTS_PATH;
-        File dir = new File(path);
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
-        //调用系统文件管理器打开指定路径目录
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setDataAndType(getUriForFile(this,dir), "audio/*");
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        //startActivityForResult(intent, REQUEST_CHOOSEFILE);
-        startActivityForResult(Intent.createChooser(intent,"选择浏览工具"),REQUEST_CHOOSEFILE);
-    }
-
-    private static Uri getUriForFile(Context context, File file) {
-        if (context == null || file == null) {
-            throw new NullPointerException();
-        }
-        Uri uri;
-        if (Build.VERSION.SDK_INT >= 24) {
-            uri = FileProvider.getUriForFile(context.getApplicationContext(), "ttscreater.fileprovider", file);
-        } else {
-            uri = Uri.fromFile(file);
-        }
-        return uri;
     }
 
     @Override
@@ -225,15 +202,4 @@ public class MainActivity extends Activity {
         PermissionsUtils.getInstance().onRequestPermissionsResult(this,requestCode,permissions,grantResults);
     }
 
-    private final int REQUEST_CHOOSEFILE = 1;
-    @Override
-    protected void onActivityResult(int requestCode,int resultCode,Intent data){//选择文件返回
-        super.onActivityResult(requestCode,resultCode,data);
-        if(resultCode==RESULT_OK){
-            switch(requestCode){
-                case REQUEST_CHOOSEFILE:
-                    break;
-            }
-        }
-    }
 }
